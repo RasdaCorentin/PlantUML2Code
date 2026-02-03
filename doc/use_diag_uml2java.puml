@@ -1,0 +1,29 @@
+@startuml
+
+
+class User {
+
+}
+
+class CommandLineInterface{
+
+}
+
+class Executable{
+
+}
+
+class Puml{
+
+}
+
+class ProgrammingLanguage{
+
+}
+
+User -- CommandLineInterface : utilise
+CommandLineInterface -- Executable : appelle
+Executable -- Puml : parse 
+Puml -- ProgrammingLanguage : est traduit 
+ 
+@enduml
