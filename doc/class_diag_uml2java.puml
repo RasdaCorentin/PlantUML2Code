@@ -1,15 +1,15 @@
 @startuml
 skinparam classAttributeIconSize 0
 
-class Class {
+class ClassUML {
   +name : {Id} String
   +isAbstract : Boolean
   +isInterface : Boolean
 }
 
 
-Class "1" o-- "*" Attribute
-Class "1" o-- "*" Operation
+ClassUML "1" o-- "*" Attribute
+ClassUML "1" o-- "*" Operation
 
 
 class Attribute {
@@ -27,25 +27,23 @@ class Operation {
 
 class Relation {
   +type : RelationType
+  +cardSource : Int
+  +cardTarget : Int 
 }
 
-Relation "1" --> "1" Class : source
-Relation "1" --> "1" Class : target
+Relation "2"--> "2" ClassUML : "{ Ordonné avec source au début et target à la fin en deuxiéme }"
 Relation "0..*" o-- "1" Cardinality : sourceCardinality
 Relation "0..*" o-- "1" Cardinality : targetCardinality
 
-abstract class Langage { 
+abstract class Class { 
   + generate()
 }
 
-Langage -- Class
-Langage -- "ClassC++"
-Langage -- ClassJava
-Langage -- ClassPython
+Class <|--  ClassUML
+Class <|-- "ClassC++"
+Class <|-- ClassJava
+Class <|-- ClassPython
 
-class Cardinality {
-  +value : Int
-}
 
 class ClassJava{}
 class ClassC++{}
