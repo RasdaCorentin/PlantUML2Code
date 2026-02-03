@@ -7,6 +7,7 @@ class Class {
   +isInterface : Boolean
 }
 
+
 Class "1" o-- "*" Attribute
 Class "1" o-- "*" Operation
 
@@ -37,13 +38,18 @@ abstract class Langage {
   + generate()
 }
 
+Langage -- Class
+Langage -- "ClassC++"
+Langage -- ClassJava
+Langage -- ClassPython
+
 class Cardinality {
   +value : Int
 }
 
-class ClasseJava{}
-class ClasseC++{}
-class ClasseRust{}
+class ClassJava{}
+class ClassC++{}
+class ClassPython{}
 
 class Type {
   +name : String
