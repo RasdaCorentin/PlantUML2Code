@@ -2,7 +2,7 @@
 skinparam classAttributeIconSize 0
 
 class Class {
-  +name : Identifier
+  +name : {Id} String
   +isAbstract : Boolean
   +isInterface : Boolean
 }
@@ -12,16 +12,16 @@ Class "1" o-- "*" Operation
 
 
 class Attribute {
-  +name : Identifier
+  +name : {Id} String
   +type : Type
-  +visibility : Visibility
+  +visibility : String
 }
 
 
 class Operation {
-  +name : Identifier
+  +name : {Id}
   +returnType : Type
-  +visibility : Visibility
+  +visibility : String
 }
 
 class Relation {
@@ -30,17 +30,20 @@ class Relation {
 
 Relation "1" --> "1" Class : source
 Relation "1" --> "1" Class : target
-Relation "1" o-- "1" Cardinality : sourceCardinality
-Relation "1" o-- "1" Cardinality : targetCardinality
+Relation "0..*" o-- "1" Cardinality : sourceCardinality
+Relation "0..*" o-- "1" Cardinality : targetCardinality
 
+abstract class Langage { 
+  + generate()
+}
 
 class Cardinality {
-  +value : String
+  +value : Int
 }
 
-class Identifier {
-  +value : String
-}
+class ClasseJava{}
+class ClasseC++{}
+class ClasseRust{}
 
 class Type {
   +name : String
