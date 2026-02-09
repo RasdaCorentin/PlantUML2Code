@@ -1,62 +1,115 @@
 @startuml
 skinparam classAttributeIconSize 0
 
-class ClassUML {
-  +name : {Id} String
-  +isAbstract : Boolean
-  +isInterface : Boolean
+class Executable{} 
+
+package ParserLayer{
+	abstract Parser{
+	  +inputPath : String
+	  +extractClass(): ClassGroup
+	}
+	abstract Class{
+	  +name : {ID} String
+	  +type : {ID} Type
+	  +getClass() : Class
+	}
+
+	class ClassUML {
+	  +name : {ID} String
+	  +isAbstract : Boolean
+	  +isInterface : Boolean
+	  ---
+	  +getAttributes : List<Attribute>
+	  +getOperations : List<Operation>
+	  +getRelations : List<(ClassUML,ClassUML,Relation)>
+	}
+
+		
+	ClassUML "1" o-- "*" Attribute
+	ClassUML "1" o-- "*" Operation
+
+
+	class Attribute {
+	  +name : {ID} String
+	  +type : String
+	  +visibility : String
+	}
+
+
+	class Operation {
+	  +name : {ID} String
+	  +returnType : String
+	  +visibility : String
+	}
+
+	class Relation {
+	  +cardSource : Int
+	  +roleSource : String 
+	  +cardTarget : Int 
+	  +roleTarget : String
+	}
+	Relation "0..*"--o"2" ClassUML : "{ Ordonné avec source au début et target à la fin en deuxiéme }"
+
+	Class <|--  ClassUML : {Exclusif except ClassGroup, incomplet}
+	Class <|-- "ClassC++" 
+	Class <|-- ClassGroup : {Définit un ensemble de Classe}
+
+	class ClassC++{}
+
+	Class "0..1" o-- "1..*" ClassGroup
+	class ClassGroup{
+	 +getClassList() : List<Class>
+	}
+	enum Type {
+	  UML
+   	  CPP
+	}
+	enum Position {
+	 CLASSNOTES
+	 OPERATIONNOTES
+	 RELATIONNOTES
+	}
+	interface Notes{
+	 +emplacement : Position 
+	 +contenu : String
+	}
+	Parser "1" *-- "1..*" Class 
+
+}
+package "Generation Layer" {
+    abstract class Generator {
+        +outputPath : String
+        +generateCode() : File
+    }
+
+    class JavaGenerator {
+        +generateCode() : File
+    }
+
+    class CppGenerator {
+        +generateCode() : File
+    }
+
+    class PythonGenerator {
+        +generateCode() : File
+    }
+    
+    class RustGenerator {
+        +generateCode() : File
+    }
+    interface Commentaire{
+	+contenu : String
+    }
+    
 }
 
 
-ClassUML "1" o-- "*" Attribute
-ClassUML "1" o-- "*" Operation
+Executable "1"  o-- "0..1" Parser
+Executable "1" o-- "0..*" Generator
 
-
-class Attribute {
-  +name : {Id} String
-  +type : Type
-  +visibility : String
-}
-
-
-class Operation {
-  +name : {Id}
-  +returnType : Type
-  +visibility : String
-}
-
-class Relation {
-  +type : RelationType
-  +cardSource : Int
-  +cardTarget : Int 
-}
-
-Relation "2"--> "2" ClassUML : "{ Ordonné avec source au début et target à la fin en deuxiéme }"
-Relation "0..*" o-- "1" Cardinality : sourceCardinality
-Relation "0..*" o-- "1" Cardinality : targetCardinality
-
-abstract class Class { 
-  + generate()
-}
-
-Class <|--  ClassUML
-Class <|-- "ClassC++"
-Class <|-- ClassJava
-Class <|-- ClassPython
-
-
-class ClassJava{}
-class ClassC++{}
-class ClassPython{}
-
-class Type {
-  +name : String
-}
-
-class Notes{
- +emplacement : int 
- +contenu : String
-} 	
-
+Generator <|-- JavaGenerator
+Generator <|-- CppGenerator
+Generator <|-- PythonGenerator
+Generator <|-- RustGenerator
 @enduml
 
