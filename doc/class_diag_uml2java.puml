@@ -79,13 +79,14 @@ package "Couche Analyse" {
 	 NOTES_CLASSE
 	 NOTES_OPERATION
 	 NOTES_RELATION
+	 NOTES_GRPCLASSE
 	}
 	
 	interface Notes {
 	 +emplacement : Position 
 	 +contenu : String
 	}
-	
+	GroupeClasse ..|> Notes	
 	ClasseUML ..|> Notes
 	Relation ..|> Notes
 	Operation ..|> Notes
@@ -120,7 +121,7 @@ package "Couche Generation" {
         +genererBlocCommentaire() : String
     }
     
-    Generateur ..> Commentaire : "Utilise pour l'en-tête"
+    Generateur ..|> Commentaire  
 }
 
 Executeur "1"  o-- "0..1" Parseur
