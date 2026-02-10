@@ -1,115 +1,133 @@
 @startuml
 skinparam classAttributeIconSize 0
 
-class Executable{} 
+class Executeur {
+  +lancerTransformation(GroupeClass) : File
+} 
 
-package ParserLayer{
-	abstract Parser{
-	  +inputPath : String
-	  +extractClass(): ClassGroup
+package "Couche Analyse" {
+	abstract class Parseur {
+	  +cheminEntree : String
+	  +extraireClasses() : GroupeClasse
 	}
-	abstract Class{
-	  +name : {ID} String
+	
+	abstract class ClasseAbstraite {
+	  +nom : {ID} String
 	  +type : {ID} Type
-	  +getClass() : Class
+	  +getClasse() : ClasseAbstraite
 	}
 
-	class ClassUML {
-	  +name : {ID} String
-	  +isAbstract : Boolean
-	  +isInterface : Boolean
+	class ClasseUML {
+	  +nom : {ID} String
+	  +estAbstraite : Boolean
+	  +estInterface : Boolean
 	  ---
-	  +getAttributes : List<Attribute>
-	  +getOperations : List<Operation>
-	  +getRelations : List<(ClassUML,ClassUML,Relation)>
+	  +getAttributs() : List<Attribut>
+	  +getOperations() : List<Operation>
+	  +getRelations() : List<(ClasseUML,ClasseUML,Relation)>
 	}
 
-		
-	ClassUML "1" o-- "*" Attribute
-	ClassUML "1" o-- "*" Operation
+	ClasseUML "1" o-- "0..*" Attribut
+	ClasseUML "1" o-- "0..*" Operation
+	ClasseUML "2" o-- "0..*" Relation  : "{Liste des relations sortantes}"
 
+	enum Visibilite {
+	  PUBLIC
+	  PRIVE
+	  PROTEGE
+	  PAQUETAGE
+	}
 
-	class Attribute {
-	  +name : {ID} String
+	class Attribut {
+	  +nom : {ID} String
 	  +type : String
-	  +visibility : String
+	  +visibilite : Visibilite
 	}
-
 
 	class Operation {
-	  +name : {ID} String
-	  +returnType : String
-	  +visibility : String
+	  +nom : {ID} String
+	  +typeRetour : String
+	  +visibilite : Visibilite
 	}
 
 	class Relation {
-	  +cardSource : Int
+	  +cardinaliteSource : int 
 	  +roleSource : String 
-	  +cardTarget : Int 
-	  +roleTarget : String
+	  +cardinaliteCible : int 
+	  +roleCible : String
 	}
-	Relation "0..*"--o"2" ClassUML : "{ Ordonné avec source au début et target à la fin en deuxiéme }"
+	
 
-	Class <|--  ClassUML : {Exclusif except ClassGroup, incomplet}
-	Class <|-- "ClassC++" 
-	Class <|-- ClassGroup : {Définit un ensemble de Classe}
+	ClasseAbstraite <|--  ClasseUML : {Exclusif sauf GroupeClasse, incomplet}
+	ClasseAbstraite <|-- "ClasseCpp" 
+	ClasseAbstraite <|-- GroupeClasse : {Définit un ensemble de Classes}
 
-	class ClassC++{}
+	class ClasseCpp{}
 
-	Class "0..1" o-- "1..*" ClassGroup
-	class ClassGroup{
-	 +getClassList() : List<Class>
+	ClasseAbstraite "0..1" --* "1..*" GroupeClasse
+	
+	class GroupeClasse {
+	 +getListeClasses() : List<ClasseAbstraite>
 	}
+	
 	enum Type {
 	  UML
-   	  CPP
+	  CPP
 	}
+	
 	enum Position {
-	 CLASSNOTES
-	 OPERATIONNOTES
-	 RELATIONNOTES
+	 NOTES_CLASSE
+	 NOTES_OPERATION
+	 NOTES_RELATION
 	}
-	interface Notes{
+	
+	interface Notes {
 	 +emplacement : Position 
 	 +contenu : String
 	}
-	Parser "1" *-- "1..*" Class 
+	
+	ClasseUML ..|> Notes
+	Relation ..|> Notes
+	Operation ..|> Notes
 
-}
-package "Generation Layer" {
-    abstract class Generator {
-        +outputPath : String
-        +generateCode() : File
-    }
-
-    class JavaGenerator {
-        +generateCode() : File
-    }
-
-    class CppGenerator {
-        +generateCode() : File
-    }
-
-    class PythonGenerator {
-        +generateCode() : File
-    }
-    
-    class RustGenerator {
-        +generateCode() : File
-    }
-    interface Commentaire{
-	+contenu : String
-    }
-    
+	Parseur "1" *-- "0..*" GroupeClasse
 }
 
+package "Couche Generation" {
+    abstract class Generateur {
+        +cheminSortie : String
+        +genererCode(GroupeClasse) : File 
+    }
 
-Executable "1"  o-- "0..1" Parser
-Executable "1" o-- "0..*" Generator
+    class GenerateurJava {
+        +genererCode(GroupeClasse) : File
+    }
 
-Generator <|-- JavaGenerator
-Generator <|-- CppGenerator
-Generator <|-- PythonGenerator
-Generator <|-- RustGenerator
+    class GenerateurCpp {
+        +genererCode(GroupeClasse) : File
+    }
+
+    class GenerateurPython {
+        +genererCode(GroupeClasse) : File
+    }
+    
+    class GenerateurRust {
+        +genererCode(GroupeClasse) : File
+    }
+    
+    interface Commentaire {
+        +contenu : String
+        +genererBlocCommentaire() : String
+    }
+    
+    Generateur ..> Commentaire : "Utilise pour l'en-tête"
+}
+
+Executeur "1"  o-- "0..1" Parseur
+Executeur "1" o-- "0..*" Generateur
+
+Generateur <|-- GenerateurJava
+Generateur <|-- GenerateurCpp
+Generateur <|-- GenerateurPython
+Generateur <|-- GenerateurRust
 @enduml
-
