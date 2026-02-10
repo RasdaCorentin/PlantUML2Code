@@ -2,21 +2,22 @@
 skinparam classAttributeIconSize 0
 
 class Executeur {
+  +cheminEntree : String
   +lancerTransformation(GroupeClass) : File
 } 
 
 package "Couche Analyse" {
-	abstract class Parseur {
-	  +cheminEntree : String
-	  +extraireClasses() : GroupeClasse
+	class DiagrammeClasse {
+	 +getListeClasses() : List<Classe>
 	}
 	
-	abstract class ClasseAbstraite {
+	abstract class Classe {
 	  +nom : {ID} String
 	  +type : {ID} Type
-	  +getClasse() : ClasseAbstraite
+	  +getClasse() : Classe
 	}
-
+}
+package UML{
 	class ClasseUML {
 	  +nom : {ID} String
 	  +estAbstraite : Boolean
@@ -58,17 +59,10 @@ package "Couche Analyse" {
 	}
 	
 
-	ClasseAbstraite <|--  ClasseUML : {Exclusif sauf GroupeClasse, incomplet}
-	ClasseAbstraite <|-- "ClasseCpp" 
-	ClasseAbstraite <|-- GroupeClasse : {Définit un ensemble de Classes}
-
-	class ClasseCpp{}
-
-	ClasseAbstraite "0..1" --* "1..*" GroupeClasse
+	Classe <|--  ClasseUML : {Exclusif, incomplet}
+	Classe "0..1" --* "1..*" DiagrammeClasse
 	
-	class GroupeClasse {
-	 +getListeClasses() : List<ClasseAbstraite>
-	}
+	
 	
 	enum Type {
 	  UML
@@ -86,34 +80,32 @@ package "Couche Analyse" {
 	 +emplacement : Position 
 	 +contenu : String
 	}
-	GroupeClasse ..|> Notes	
 	ClasseUML ..|> Notes
 	Relation ..|> Notes
 	Operation ..|> Notes
 
-	Parseur "1" *-- "0..*" GroupeClasse
 }
 
 package "Couche Generation" {
     abstract class Generateur {
         +cheminSortie : String
-        +genererCode(GroupeClasse) : File 
+        +genererCode(DiagrammeClasse) : File 
     }
 
     class GenerateurJava {
-        +genererCode(GroupeClasse) : File
+        +genererCode(DiagrammeClasse) : File
     }
 
     class GenerateurCpp {
-        +genererCode(GroupeClasse) : File
+        +genererCode(DiagrammeClasse) : File
     }
 
     class GenerateurPython {
-        +genererCode(GroupeClasse) : File
+        +genererCode(DiagrammeClasse) : File
     }
     
     class GenerateurRust {
-        +genererCode(GroupeClasse) : File
+        +genererCode(DiagrammeClasse) : File
     }
     
     interface Commentaire {
@@ -124,11 +116,17 @@ package "Couche Generation" {
     Generateur ..|> Commentaire  
 }
 
-Executeur "1"  o-- "0..1" Parseur
+Executeur "1"  o-- "0..1" DiagrammeClasse
 Executeur "1" o-- "0..*" Generateur
 
 Generateur <|-- GenerateurJava
 Generateur <|-- GenerateurCpp
 Generateur <|-- GenerateurPython
 Generateur <|-- GenerateurRust
+
+package Cpp{
+	class ClasseCpp{}
+}
+
+Classe <|-- "ClasseCpp" 
 @enduml
