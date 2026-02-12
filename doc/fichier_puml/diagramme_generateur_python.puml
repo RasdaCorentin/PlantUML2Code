@@ -1,0 +1,79 @@
+@startuml
+title UMLFactory2Code - Partie commune
+
+' --- classes communes ici ---
+' ex : DiagrammeClasse, ClasseUML, Attribut, Operation, Relation, Notes, Executeur, Generateur (abstraite)
+
+
+
+
+
+title UMLFactory2Code - Extension Python (Enzo)
+
+' --- classes communes nécessaires pour le contexte ---
+' ex : DiagrammeClasse, Generateur
+
+' --- ta classe perso ---
+' ex : GenerateurPython
+@startuml
+title UMLFactory2Code - Extension Python (Enzo)
+
+package "Contexte commun (minimal)" {
+  abstract class Generateur {
+    +id : {ID} String
+    +cheminSortie : String
+    +genererCode(diagramme : DiagrammeClasse) : File
+  }
+
+  class Executeur {
+    +id : {ID} String
+    +cheminEntree : String
+    +lancerTransformation(generateur : Generateur, diagramme : DiagrammeClasse) : File
+  }
+
+  class DiagrammeClasse {
+    +id : {ID} String
+    +getListeClasses() : List<Classe>
+  }
+
+  class Classe {
+    +id : {ID} String
+    +nom : {ID} String
+    +type : Type
+  }
+
+  enum Type {
+    UML
+    CPP
+  }
+}
+
+package "Extension Python (personnelle)" {
+  class GenerateurPython {
+    +id : {ID} String
+    +genererCode(diagramme : DiagrammeClasse) : File
+    +genererClassePython(c : Classe) : File
+  }
+}
+
+' Polymorphisme : spécialisation
+Generateur <|-- GenerateurPython
+
+' Orchestration : l’executeur délègue au générateur
+Executeur ..> Generateur : utilise
+Executeur ..> DiagrammeClasse : utilise
+
+' Le générateur Python parcourt le diagramme
+GenerateurPython ..> DiagrammeClasse : lit
+GenerateurPython ..> Classe : génère
+
+note right of GenerateurPython
+Redéfinit genererCode(...) pour produire
+des fichiers .py à partir du DiagrammeClasse.
+end note
+
+@enduml
+
+' --- relations/héritage ---
+' Generateur <|-- GenerateurPython
+@enduml
