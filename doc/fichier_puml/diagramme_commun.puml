@@ -1,0 +1,104 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "Couche Generateur" {
+  class ConvertisseurUmlVersCode {
+    +cheminEntree : {ID} String
+    +cheminSortie : {ID} String
+    +convertir(DiagrammeClasse, LangageSortie) : String
+  }
+  abstract class Generateur {
+    +langage : {ID} LangageSortie
+    +genererCode(DiagrammeClasse) : File
+    +genererClasse(classe: Classe) : String
+  }
+
+  enum LangageSortie {
+    JAVA
+    CPP
+    PYTHON
+  }
+
+  interface Commentaire {
+    +genererBlocCommentaire() : String
+  }
+
+  Generateur ..|> Commentaire
+}
+
+package UML {
+  class DiagrammeClasse {
+    +nom : {ID} String
+    +getListeClasses() : List<Classe>
+  }
+  class "Classe" as UMLClasse {
+    +nom : {ID} String
+    +estAbstraite : Boolean
+    +estInterface : Boolean
+    ---
+    +getAttributs() : List<Attribut>
+    +getOperations() : List<Operation>
+    +getRelations() : List<(Classe,Classe,Relation)>
+  }
+
+  UMLClasse "1" *-- "0..*" Attribut
+  UMLClasse "1" *-- "0..*" Operation
+  UMLClasse "2" o-- "0..*" Relation  : "{Liste des relations sortantes}"
+
+  enum Visibilite {
+    PUBLIC
+    PRIVE
+    PROTEGE
+    PAQUETAGE
+  }
+
+  class Attribut {
+    +nom : {ID} String
+    +type : String
+    +visibilite : Visibilite
+  }
+
+  class Operation {
+    +nom : {ID} String
+    +typeRetour : String
+    +visibilite : Visibilite
+  }
+
+  abstract Relation {
+    +idRelation : {ID} String
+    +cardinaliteSource : int
+    +roleSource : String
+    +cardinaliteCible : int
+    +roleCible : String
+  }
+
+  Relation <|-- Composition
+  Relation <|-- Agregation
+  Relation <|-- Heritage
+
+  interface Notes {
+    +ajouterNotes(String): void
+  }
+
+  UMLClasse ..|> Notes
+  Relation ..|> Notes
+  Operation ..|> Notes
+}
+
+UMLClasse "0..*" --* "1" DiagrammeClasse
+
+
+
+ConvertisseurUmlVersCode "1" o-- "0..1" DiagrammeClasse
+ConvertisseurUmlVersCode "1" *-- "0..*" Generateur
+
+Generateur <|-- GenerateurJava
+Generateur <|-- GenerateurCpp
+Generateur <|-- GenerateurPython
+
+Note "Classe spécialisé voir diagramme spécialisé" as N1
+N1 -- GenerateurJava
+N1 -- GenerateurCpp
+N1 -- GenerateurPython
+
+@enduml
