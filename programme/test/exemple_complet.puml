@@ -1,0 +1,59 @@
+@startuml
+
+interface Drawable {
+    +draw() : void
+}
+
+abstract class Shape {
+    -color : String
+    -x : int
+    -y : int
+    ---
+    +getArea() : double
+    +move() : void
+}
+
+class Circle {
+    -radius : double
+    ---
+    +getArea() : double
+    +draw() : void
+}
+
+class Rectangle {
+    -width : double
+    -height : double
+    ---
+    +getArea() : double
+    +draw() : void
+}
+
+class Canvas {
+    -name : String
+    ---
+    +render() : void
+}
+
+class Color {
+    -r : int
+    -g : int
+    -b : int
+}
+
+note right of Shape
+  Classe abstraite de base
+  pour toutes les formes
+end note
+
+note left of Canvas
+  Conteneur principal
+end note
+
+Shape <|-- Circle
+Shape <|-- Rectangle
+Circle ..|> Drawable
+Rectangle ..|> Drawable
+Canvas "1" *-- "0..*" Shape
+Shape "1" --> "1" Color
+
+@enduml

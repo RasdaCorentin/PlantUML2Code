@@ -1,16 +1,21 @@
 @startuml
+title UMLFactory2Code - Diagramme Commun
 skinparam classAttributeIconSize 0
 
 package "Couche Generateur" {
+
   class ConvertisseurUmlVersCode {
     +cheminEntree : {ID} String
     +cheminSortie : {ID} String
-    +convertir(DiagrammeClasse, LangageSortie) : String
+    ---
+    +convertir(DiagrammeClasse, Generateur) : List<File>
   }
+
   abstract class Generateur {
     +langage : {ID} LangageSortie
-    +genererCode(DiagrammeClasse) : File
-    +genererClasse(classe: Classe) : String
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+    +genererBlocCommentaire() : String
   }
 
   enum LangageSortie {
@@ -24,32 +29,32 @@ package "Couche Generateur" {
   }
 
   Generateur ..|> Commentaire
+  ConvertisseurUmlVersCode "1" o-- "0..1" DiagrammeClasse : "diagramme a convertir"
+  ConvertisseurUmlVersCode "1" *-- "1..*" Generateur : "generateurs"
 }
 
-package UML {
+package "UML" {
+
   class DiagrammeClasse {
     +nom : {ID} String
+    -classes : List<Classe>
+    ---
     +getListeClasses() : List<Classe>
   }
+
   class "Classe" as UMLClasse {
     +nom : {ID} String
     +estAbstraite : Boolean
     +estInterface : Boolean
+    -attributs : List<Attribut>
+    -operations : List<Operation>
+    -relations : List<Relation>
+    -notes : List<String>
     ---
     +getAttributs() : List<Attribut>
     +getOperations() : List<Operation>
-    +getRelations() : List<(Classe,Classe,Relation)>
-  }
-
-  UMLClasse "1" *-- "0..*" Attribut
-  UMLClasse "1" *-- "0..*" Operation
-  UMLClasse "2" o-- "0..*" Relation  : "{Liste des relations sortantes}"
-
-  enum Visibilite {
-    PUBLIC
-    PRIVE
-    PROTEGE
-    PAQUETAGE
+    +getRelations() : List<Relation>
+    +ajouterNotes(String) : void
   }
 
   class Attribut {
@@ -62,41 +67,79 @@ package UML {
     +nom : {ID} String
     +typeRetour : String
     +visibilite : Visibilite
+    -notes : List<String>
+    ---
+    +ajouterNotes(String) : void
   }
 
-  abstract Relation {
+  abstract class Relation {
     +idRelation : {ID} String
-    +cardinaliteSource : int
+    +cardinaliteSource : String
     +roleSource : String
-    +cardinaliteCible : int
+    +cardinaliteCible : String
     +roleCible : String
+    -notes : List<String>
+    ---
+    +ajouterNotes(String) : void
   }
 
+  class Composition {
+  }
+
+  class Agregation {
+  }
+
+  class Heritage {
+  }
+
+  enum Visibilite {
+    PUBLIC
+    PRIVE
+    PROTEGE
+    PAQUETAGE
+  }
+
+  interface Notes {
+    +ajouterNotes(String) : void
+  }
+
+  ' --- Heritages ---
   Relation <|-- Composition
   Relation <|-- Agregation
   Relation <|-- Heritage
 
-  interface Notes {
-    +ajouterNotes(String): void
-  }
-
+  ' --- Implementations de Notes ---
   UMLClasse ..|> Notes
-  Relation ..|> Notes
   Operation ..|> Notes
+  Relation ..|> Notes
+
+  ' --- Compositions internes ---
+  DiagrammeClasse "1" *-- "0..*" UMLClasse : "classes"
+  UMLClasse "1" *-- "0..*" Attribut : "attributs"
+  UMLClasse "1" *-- "0..*" Operation : "operations"
+
+  ' --- Agregation : une relation lie 2 classes ---
+  UMLClasse "2" o-- "0..*" Relation : "relations sortantes"
 }
 
-UMLClasse "0..*" --* "1" DiagrammeClasse
+package "Parseur" {
 
+  class ParseurPuml {
+    +cheminFichier : {ID} String
+    -contenu : String
+    ---
+    +parser() : DiagrammeClasse
+  }
 
+  ParseurPuml "1" *-- "0..1" DiagrammeClasse : "produit"
+}
 
-ConvertisseurUmlVersCode "1" o-- "0..1" DiagrammeClasse
-ConvertisseurUmlVersCode "1" *-- "0..*" Generateur
-
+' --- Heritages vers les generateurs specialises ---
 Generateur <|-- GenerateurJava
 Generateur <|-- GenerateurCpp
 Generateur <|-- GenerateurPython
 
-Note "Classe spécialisé voir diagramme spécialisé" as N1
+note "Classe specialisee\nvoir diagramme specialise" as N1
 N1 -- GenerateurJava
 N1 -- GenerateurCpp
 N1 -- GenerateurPython

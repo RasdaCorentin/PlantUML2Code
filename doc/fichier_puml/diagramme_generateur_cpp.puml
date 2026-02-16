@@ -1,0 +1,175 @@
+@startuml
+title UMLFactory2Code - Extension C++
+skinparam classAttributeIconSize 0
+
+' --- Rappel du contexte commun ---
+package "Contexte Commun" {
+
+  abstract class Generateur {
+    +langage : {ID} LangageSortie
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+    +genererBlocCommentaire() : String
+  }
+
+  enum LangageSortie {
+    CPP
+    PYTHON
+    JAVA
+  }
+}
+
+package "Extension C++" #LightBlue {
+
+  ' --- Interface Formattage ---
+  interface Formattage {
+    +idFormat : {ID} String
+    ---
+    +genererCode() : String
+  }
+
+  note right of Formattage
+    Delegation de l'ecriture :
+    chaque element sait se generer
+    en code C++ via genererCode().
+  end note
+
+  ' --- GenerateurCpp ---
+  class GenerateurCpp {
+    +langage : {ID} LangageSortie = CPP
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<FichierCpp>
+    +genererBlocCommentaire() : String
+    -traduireClasse(UMLClasse) : ClasseCpp
+    -traduireRelation(ClasseCpp, String, Relation, Map) : void
+    -genererHeader(ClasseCpp) : FichierCpp
+    -genererSource(ClasseCpp) : FichierCpp
+  }
+
+  note left of GenerateurCpp::genererClasse2Langage
+    {redefine}
+    Polymorphisme par specialisation
+  end note
+
+  ' --- FichierCpp ---
+  class FichierCpp {
+    +nomFichier : {ID} String
+    +typeFichier : TypeFichierCpp
+    +cheminComplet : String
+    ---
+    +genererCode() : String
+    +sauvegarder() : void
+  }
+
+  note bottom of FichierCpp
+    <b>Delegation :</b>
+    genererCode() appelle
+    ClasseCpp.genererCode()
+  end note
+
+  ' --- ClasseCpp ---
+  class "Classe" as ClasseCpp {
+    +nom : {ID} String
+    +estAbstraite : Boolean
+    -notes : List<String>
+    -attributsCpp : List<AttributCpp>
+    -operationsCpp : List<OperationCpp>
+    -relationsCpp : List<RelationCpp>
+    ---
+    +genererCode() : String
+    +getAttributsCpp() : List<AttributCpp>
+    +getOperationsCpp() : List<OperationCpp>
+  }
+
+  ' --- AttributCpp ---
+  class AttributCpp {
+    +nom : {ID} String
+    +typeCpp : String
+    +estConst : Boolean
+    +estStatic : Boolean
+    ---
+    +genererCode() : String
+  }
+
+  ' --- OperationCpp ---
+  class OperationCpp {
+    +nom : {ID} String
+    +typeRetourCpp : String
+    +estVirtuelle : Boolean
+    +estVirtuellePure : Boolean
+    ---
+    +genererCode() : String
+  }
+
+  ' --- RelationCpp ---
+  class RelationCpp {
+    +idRelation : {ID} String
+    +typeRelation : TypeRelationCpp
+    +cardinalite : String
+    ---
+    +genererCode() : String
+    +genererInclude() : String
+    -estMultiple() : Boolean
+  }
+
+  ' --- Heritage ---
+  class Heritage {
+    +idHeritage : {ID} String
+    ---
+    +genererCode() : String
+  }
+
+  ' --- Implementation ---
+  class Implementation {
+    +idImpl : {ID} String
+    ---
+    +genererCode() : String
+  }
+
+  ' --- Enums ---
+  enum TypeFichierCpp {
+    HEADER
+    SOURCE
+  }
+
+  enum TypeRelationCpp {
+    ASSOCIATION
+    DEPENDANCE
+    AGREGATION
+  }
+
+  ' ===== RELATIONS =====
+
+  ' Heritage vers le commun
+  Generateur <|-- GenerateurCpp
+
+  ' Heritage local
+  RelationCpp <|-- Heritage
+  RelationCpp <|-- Implementation
+
+  ' Implementation de Formattage
+  Formattage <|.. FichierCpp
+  Formattage <|.. ClasseCpp
+  Formattage <|.. AttributCpp
+  Formattage <|.. OperationCpp
+  Formattage <|.. RelationCpp
+
+  ' Agregation : le generateur cree des fichiers
+  GenerateurCpp "1" o-- "0..*" FichierCpp : "cree"
+
+  ' Agregation : un fichier contient des classes
+  FichierCpp "1" o-- "1..*" ClasseCpp : "contient"
+
+  ' Composition : une classe possede ses attributs et operations
+  ClasseCpp "1" *-- "0..*" AttributCpp : "attributs"
+  ClasseCpp "1" *-- "0..*" OperationCpp : "operations"
+
+  ' Agregation : une relation lie 2 classes
+  ClasseCpp "2" o-- "0..*" RelationCpp : "relations"
+
+  ' Associations vers enums
+  FichierCpp --> TypeFichierCpp
+  RelationCpp --> TypeRelationCpp
+}
+
+@enduml
