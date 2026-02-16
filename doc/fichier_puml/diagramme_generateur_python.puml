@@ -1,7 +1,10 @@
 @startuml
-title UMLFactory2Code - Extension Python (Enzo)
+title UMLFactory2Code - Extension Python (Enzo POIRIER)
 
-package "Contexte commun (minimal)" {
+skinparam classAttributeIconSize 0
+top to bottom direction
+
+package "Modèle UML (utilisé par le GenerateurPython)" {
 
   enum LangageSortie {
     JAVA
@@ -9,18 +12,27 @@ package "Contexte commun (minimal)" {
     PYTHON
   }
 
-  class DiagrammeClasse {
-    +nom : {ID} String
-    +getListeClasses() : List<Classe>
+  enum Visibilite {
+    PUBLIC
+    PRIVE
+    PROTEGE
+    PAQUETAGE
+  }
+
+  interface Notes {
+    +ajouterNotes(texte : String) : void
   }
 
   class Classe {
     +nom : {ID} String
     +estAbstraite : Boolean
     +estInterface : Boolean
-    +getAttributs() : List<Attribut>
-    +getOperations() : List<Operation>
-    +getRelations() : List<Relation>
+    +attributs : List<Attribut>
+    +operations : List<Operation>
+    +relationsSortantes : List<Relation>
+    +ecrireClasse(fichier : FichierCodePython) : void
+    +formaterOperation(operation : Operation) : String
+    +formaterAttribut(attribut : Attribut) : String
   }
 
   class Attribut {
@@ -41,69 +53,66 @@ package "Contexte commun (minimal)" {
     +roleSource : String
     +cardinaliteCible : int
     +roleCible : String
+    +toPython() : String
   }
 
-  class Heritage
-  class Composition
-  class Agregation
+  class Heritage {
+    +modeHeritage : String
+    +toPython() : String
+  }
+
+  class Composition {
+    +toPython() : String
+  }
+
+  class Agregation {
+    +toPython() : String
+  }
 
   Relation <|-- Heritage
   Relation <|-- Composition
   Relation <|-- Agregation
 
-  interface Notes {
-    +ajouterNotes(String): void
-  }
-
-  Classe ..|> Notes
-  Relation ..|> Notes
-  Operation ..|> Notes
-
-
-
-  enum Visibilite {
-    PUBLIC
-    PRIVE
-    PROTEGE
-    PAQUETAGE
-  }
-
   abstract class Generateur {
     +langage : {ID} LangageSortie
-    +genererCode(diagramme : DiagrammeClasse) : File
+    +genererCode() : File
     +genererClasse(classe : Classe) : String
+  }
+
+  class GenerateurPython {
+    +langage : {ID} LangageSortie
+    +genererCode() : File
+    +genererClasse(classe : Classe) : String
+  }
+
+  class FichierCodePython {
+    +nomFichier : {ID} String
+    +contenu : String
+    +ajouterLigne(ligne : String) : void
+    +sauvegarder() : File
   }
 
   class ConvertisseurUmlVersCode {
     +cheminEntree : {ID} String
     +cheminSortie : {ID} String
-    +convertir(diagramme : DiagrammeClasse, langage : LangageSortie) : String
+    +convertir(langage : LangageSortie) : String
   }
 
   Classe "1" *-- "0..*" Attribut : attributs
   Classe "1" *-- "0..*" Operation : operations
   Classe "1" o-- "0..*" Relation : relationsSortantes
-  DiagrammeClasse "1" *-- "0..*" Classe : classes
 
-  ConvertisseurUmlVersCode "1" o-- "0..1" DiagrammeClasse  : litDiagramme
-  ConvertisseurUmlVersCode ..> LangageSortie : selectionne
-  ConvertisseurUmlVersCode "1" *-- "0..*" Generateur : utilise
+  Classe ..|> Notes
+  Relation ..|> Notes
+  Operation ..|> Notes
+
+  Generateur <|-- GenerateurPython
+
+  GenerateurPython "1" o-- "0..*" FichierCodePython : ecritDans
+
+FichierCodePython "1" --> "1..*" Classe : contientCodeDe
+
+  ConvertisseurUmlVersCode ..> Generateur : selectionne
 }
-
-package "Extension Python (personnelle)" {
-
-  class GenerateurPython {
-    +langage : {ID} LangageSortie
-    +genererCode(diagramme : DiagrammeClasse) : File
-    +genererClasse(classe : Classe) : String
-    -genererClassePython(classe : Classe) : String
-  }
-}
-
-Generateur <|-- GenerateurPython
-
-ConvertisseurUmlVersCode ..> GenerateurPython : instancieSelonLangage
-
-GenerateurPython ..> Classe : generePour
 
 @enduml
