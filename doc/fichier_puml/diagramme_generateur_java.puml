@@ -134,17 +134,10 @@ package "Extension Java" #MistyRose {
   ' Trait plein sans flèche ni losange = Bidirectionnel
   GenerateurJava "1" -- "0..*" ClasseJava : "Gère <--> Appartient à"
   
-  ' 4. Dépendance (Le générateur UTILISE l'Enum pour la traduction)
-  GenerateurJava ..> Visibilite : "traduit vers"
 
-  ' 5. Composition (Une classe est composée d'attributs et méthodes)
+  ' 4. Composition (Une classe est composée d'attributs et méthodes)
   ClasseJava "1" *-- "0..*" AttributJava : "possède"
   ClasseJava "1" *-- "0..*" MethodeJava : "possède"
-
-  ' 6. Association (Les éléments ONT une visibilité définie)
-  ClasseJava --> Visibilite
-  AttributJava --> Visibilite
-  MethodeJava --> Visibilite
 
 }
 @enduml
