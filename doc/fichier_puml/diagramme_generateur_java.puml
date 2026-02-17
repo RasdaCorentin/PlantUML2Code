@@ -1,0 +1,106 @@
+@startuml
+title UMLFactory2Code - Extension Java
+skinparam classAttributeIconSize 0
+
+' --- Rappel du contexte commun (minimal pour lien) ---
+package "Contexte Commun" {
+  abstract class Generateur {
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+  }
+}
+
+package "Extension Java" #MistyRose {
+
+  ' --- Interface de génération (Equivalent Formattage C++) ---
+  interface GenerableJava {
+    +genererCode() : String
+  }
+
+  note right of GenerableJava
+    Standardisation :
+    Tout élément Java sait
+    s'écrire sous forme de String.
+  end note
+
+  ' --- Le Générateur Principal ---
+  class GenerateurJava {
+    +langage : LangageSortie = JAVA
+    -packageParDefaut : String
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+    +genererBlocCommentaire() : String
+    -traduireClasse(UMLClasse) : ClasseJava
+    -sauvegarderFichier(ClasseJava) : File
+  }
+
+  ' --- Représentation d'une Classe Java ---
+  class ClasseJava {
+    +nom : String
+    +package : String
+    +imports : Set<String>
+    +estAbstraite : Boolean
+    +nomMere : String
+    +interfaces : List<String>
+    ---
+    +ajouterImport(String) : void
+    +genererCode() : String
+  }
+
+  ' --- Attribut Java (Gère aussi les Relations converties) ---
+  class AttributJava {
+    +nom : String
+    +type : String
+    +visibilite : String
+    +estStatic : Boolean
+    +estFinal : Boolean
+    ---
+    +genererCode() : String
+    +genererGetter() : String
+    +genererSetter() : String
+  }
+
+  ' --- Méthode Java ---
+  class MethodeJava {
+    +nom : String
+    +typeRetour : String
+    +visibilite : String
+    +parametres : Map<String, String>
+    +contenu : String
+    ---
+    +genererCode() : String
+  }
+
+  ' --- Utilitaires ---
+  class ConvertisseurTypeJava {
+    {static} +traduireType(String) : String
+    {static} +resoudreImports(String) : String
+  }
+
+  ' ===== RELATIONS =====
+
+  ' Héritage vers le commun
+  Generateur <|-- GenerateurJava
+
+  ' Implémentation de l'interface commune
+  GenerableJava <|.. ClasseJava
+  GenerableJava <|.. AttributJava
+  GenerableJava <|.. MethodeJava
+
+  ' Le générateur crée des Classes Java
+  GenerateurJava ..> ClasseJava : "crée et configure"
+  GenerateurJava ..> ConvertisseurTypeJava : "utilise"
+
+  ' Composition interne de la classe Java
+  ClasseJava "1" *-- "0..*" AttributJava : "possède"
+  ClasseJava "1" *-- "0..*" MethodeJava : "possède"
+
+}
+
+note bottom of AttributJava
+  <b>Spécificité Java :</b>
+  L'attribut génère sa déclaration
+  mais peut aussi fournir
+  ses Getters et Setters.
+end note
+
+@enduml
