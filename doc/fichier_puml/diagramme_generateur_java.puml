@@ -31,6 +31,8 @@ package "Extension Java" #MistyRose {
     +genererBlocCommentaire() : String
     -traduireClasse(UMLClasse) : ClasseJava
     -sauvegarderFichier(ClasseJava) : File
+    {static} +traduireType(String) : String
+    {static} +resoudreImports(String) : String
   }
 
   ' --- Représentation d'une Classe Java ---
@@ -70,12 +72,6 @@ package "Extension Java" #MistyRose {
     +genererCode() : String
   }
 
-  ' --- Utilitaires ---
-  class ConvertisseurTypeJava {
-    {static} +traduireType(String) : String
-    {static} +resoudreImports(String) : String
-  }
-
   ' ===== RELATIONS =====
 
   ' Héritage vers le commun
@@ -88,7 +84,7 @@ package "Extension Java" #MistyRose {
 
   ' Le générateur crée des Classes Java
   GenerateurJava ..> ClasseJava : "crée et configure"
-  GenerateurJava ..> ConvertisseurTypeJava : "utilise"
+
 
   ' Composition interne de la classe Java
   ClasseJava "1" *-- "0..*" AttributJava : "possède"
