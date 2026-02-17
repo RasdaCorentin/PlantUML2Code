@@ -17,22 +17,14 @@ package "Contexte Commun" {
     PYTHON
     JAVA
   }
+  class Formattage {
+    +idFormattage : {ID} String
+    ---
+    +genererCode()
+  }
 }
 
 package "Extension C++" #LightBlue {
-
-  ' --- Interface Formattage ---
-  interface Formattage {
-    +idFormat : {ID} String
-    ---
-    +genererCode() : String
-  }
-
-  note right of Formattage
-    Delegation de l'ecriture :
-    chaque element sait se generer
-    en code C++ via genererCode().
-  end note
 
   ' --- GenerateurCpp ---
   class GenerateurCpp {
@@ -40,6 +32,7 @@ package "Extension C++" #LightBlue {
     ---
     +genererClasse2Langage(DiagrammeClasse) : List<FichierCpp>
     +genererBlocCommentaire() : String
+    +genererCode() : String
     -traduireClasse(UMLClasse) : ClasseCpp
     -traduireRelation(ClasseCpp, String, Relation, Map) : void
     -genererHeader(ClasseCpp) : FichierCpp
@@ -47,7 +40,6 @@ package "Extension C++" #LightBlue {
   }
 
   note left of GenerateurCpp::genererClasse2Langage
-    {redefine}
     Polymorphisme par specialisation
   end note
 
@@ -105,26 +97,32 @@ package "Extension C++" #LightBlue {
   class RelationCpp {
     +idRelation : {ID} String
     +typeRelation : TypeRelationCpp
-    +cardinalite : String
     ---
     +genererCode() : String
     +genererInclude() : String
-    -estMultiple() : Boolean
   }
 
-  ' --- Heritage ---
-  class Heritage {
-    +idHeritage : {ID} String
+  class RelationCppAvecCardinalite {
+    +idRelation : String
+    +typeRelation : TypeRelationCpp
+    +cardinaliteSource : String
+    +cardinaliteSource : String
+    +roleSource : String
+    +roleCible : String
     ---
     +genererCode() : String
+    +genererInclude() : String
   }
 
   ' --- Implementation ---
-  class Implementation {
-    +idImpl : {ID} String
+  class RelationCppSansCardinalite {
+    +idRelation : String
+    +typeRelation : TypeRelationCpp
     ---
     +genererCode() : String
+    +genererInclude() : String
   }
+
 
   ' --- Enums ---
   enum TypeFichierCpp {
@@ -134,42 +132,42 @@ package "Extension C++" #LightBlue {
 
   enum TypeRelationCpp {
     ASSOCIATION
-    DEPENDANCE
     AGREGATION
+    HERIATGE 
+    IMPLEMENTATION
   }
 
   ' ===== RELATIONS =====
 
+  Formattage ..|> ClasseCpp
+  Formattage ..|> OperationCpp
+  Formattage ..|> AttributCpp
+  Formattage ..|> RelationCpp
+  Formattage ..|> FichierCpp
   ' Heritage vers le commun
   Generateur <|-- GenerateurCpp
 
   ' Heritage local
-  RelationCpp <|-- Heritage
-  RelationCpp <|-- Implementation
+  RelationCpp <|-- RelationCppSansCardinalite
+  RelationCpp <|-- RelationCppAvecCardinalite 
 
-  ' Implementation de Formattage
-  Formattage <|.. FichierCpp
-  Formattage <|.. ClasseCpp
-  Formattage <|.. AttributCpp
-  Formattage <|.. OperationCpp
-  Formattage <|.. RelationCpp
 
   ' Agregation : le generateur cree des fichiers
-  GenerateurCpp "1" o-- "0..*" FichierCpp : "cree"
+  GenerateurCpp "1" o-- "0..*" FichierCpp 
 
   ' Agregation : un fichier contient des classes
-  FichierCpp "1" o-- "1..*" ClasseCpp : "contient"
+  FichierCpp "1" o-- "1..*" ClasseCpp 
 
   ' Composition : une classe possede ses attributs et operations
-  ClasseCpp "1" *-- "0..*" AttributCpp : "attributs"
-  ClasseCpp "1" *-- "0..*" OperationCpp : "operations"
+  ClasseCpp "1" *-- "0..*" AttributCpp
+  ClasseCpp "1" *-- "0..*" OperationCpp 
 
   ' Agregation : une relation lie 2 classes
-  ClasseCpp "2" o-- "0..*" RelationCpp : "relations"
+  ClasseCpp "2" o-- "0..*" RelationCpp 
 
   ' Associations vers enums
-  FichierCpp --> TypeFichierCpp
-  RelationCpp --> TypeRelationCpp
+  FichierCpp ..> TypeFichierCpp
+  RelationCpp ..> TypeRelationCpp
 }
 
 @enduml

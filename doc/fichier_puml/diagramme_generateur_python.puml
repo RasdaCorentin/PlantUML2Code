@@ -1,0 +1,31 @@
+@startuml
+title UMLFactory2Code - Extension Python (Enzo)
+
+package "Contexte commun (minimal)" {
+
+  enum LangageSortie {
+    JAVA
+    CPP
+    PYTHON
+  }
+  abstract class Generateur {
+    +langage : {ID} LangageSortie
+    +genererCode(diagramme : DiagrammeClasse) : File
+    +genererClasse(classe : Classe) : String
+  }
+}
+
+package "Extension Python (personnelle)" {
+
+  class GenerateurPython {
+    +langage : {ID} LangageSortie
+    +genererCode(diagramme : DiagrammeClasse) : File
+    +genererClasse(classe : Classe) : String
+    -genererClassePython(classe : Classe) : String
+  }
+
+}
+
+Generateur <|-- GenerateurPython
+
+@enduml
