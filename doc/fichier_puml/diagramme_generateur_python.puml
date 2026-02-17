@@ -4,18 +4,15 @@ title UMLFactory2Code - Extension Python (Enzo POIRIER)
 skinparam classAttributeIconSize 0
 top to bottom direction
 
+' =========================
+' PACKAGE 1 : MODELE UML
+' =========================
+
 package "Modèle UML (utilisé par le GenerateurPython)" {
 
-  enum LangageSortie {
-    JAVA
-    CPP
+  enum LangageSortie { 
     PYTHON
   }
-
-  note right of LangageSortie
-    Définit les langages cibles
-    supportés par le générateur.
-  end note
 
   enum Visibilite {
     PUBLIC
@@ -24,41 +21,19 @@ package "Modèle UML (utilisé par le GenerateurPython)" {
     PAQUETAGE
   }
 
-  note right of Visibilite
-    Représente la visibilité UML
-    des attributs et opérations.
-  end note
-
-  enum TypeAgregation {
-    FORTE
-    FAIBLE
-  }
-
-  note right of TypeAgregation
-    Indique si la relation
-    est une composition (forte)
-    ou une agrégation (faible).
-  end note
-
-  enum TypeGeneralisation {
+  enum TypeRelation {
+    FORTEAGREGATION
+    FAIBLEAGREGATION
     HERITAGE
     IMPLEMENTATION
   }
 
-  note right of TypeGeneralisation
-    Spécifie si la relation est
-    un héritage ou une implémentation.
-  end note
+  LangageSortie -[hidden]down-> TypeRelation
+  TypeRelation -[hidden]down-> Visibilite
 
   interface Notes {
     +ajouterNotes(texte : String) : void
   }
-
-  note right of Notes
-    Interface commune permettant
-    d'ajouter des commentaires UML
-    aux éléments du modèle.
-  end note
 
   class Classe {
     +nom : {ID} String
@@ -72,34 +47,17 @@ package "Modèle UML (utilisé par le GenerateurPython)" {
     +formaterAttribut(attribut : Attribut) : String
   }
 
-  note right of Classe
-    Représente une classe UML
-    contenant attributs, opérations
-    et relations sortantes.
-  end note
-
   class Attribut {
     +nom : {ID} String
     +type : String
     +visibilite : Visibilite
   }
 
-  note right of Attribut
-    Modélise un attribut UML
-    avec son type et sa visibilité.
-  end note
-
   class Operation {
     +nom : {ID} String
     +typeRetour : String
     +visibilite : Visibilite
   }
-
-  note right of Operation
-    Représente une méthode UML
-    avec son type de retour
-    et sa visibilité.
-  end note
 
   abstract class Relation {
     +idRelation : {ID} String
@@ -110,59 +68,26 @@ package "Modèle UML (utilisé par le GenerateurPython)" {
     +toPython() : String
   }
 
-  note right of Relation
-    Classe abstraite représentant
-    une relation UML entre deux classes.
-    Génère son équivalent Python.
-  end note
-
-  class Generalisation {
-    +type : TypeGeneralisation
-    +toPython() : String
+  class RelationAvecCardinalite {
+    +cardinaliteSource : String
+    +roleSource : String
+    +cardinaliteCible : String
+    +roleCible : String
   }
 
-  note right of Generalisation
-    Représente une relation de
-    spécialisation (héritage ou
-    implémentation).
-  end note
-
-  class Agregation {
-    +type : TypeAgregation
-    +toPython() : String
+  class RelationSansCardinalite {
+    +estHeritage : Boolean
+    +estImplementation : Boolean
   }
 
-  note right of Agregation
-    Représente une relation
-    partie-tout (forte ou faible).
-  end note
-
-  Relation <|-- Generalisation
-  Relation <|-- Agregation
-
-  abstract class Generateur {
-    +langage : {ID} LangageSortie
-    +genererCode() : File
-    +genererClasse(classe : Classe) : String
-  }
-
-  note right of Generateur
-    Classe abstraite définissant
-    le comportement commun des
-    générateurs de code.
-  end note
+  Relation <|-- RelationAvecCardinalite
+  Relation <|-- RelationSansCardinalite
 
   class GenerateurPython {
     +langage : {ID} LangageSortie
     +genererCode() : File
     +genererClasse(classe : Classe) : String
   }
-
-  note right of GenerateurPython
-    Générateur concret produisant
-    du code Python à partir
-    du modèle UML.
-  end note
 
   class FichierCodePython {
     +nomFichier : {ID} String
@@ -171,11 +96,23 @@ package "Modèle UML (utilisé par le GenerateurPython)" {
     +sauvegarder() : File
   }
 
-  note right of FichierCodePython
-    Représente un fichier Python
-    généré contenant le code
-    d'une ou plusieurs classes.
-  end note
+  Classe "1" *-- "0..*" Attribut
+  Classe "1" *-- "0..*" Operation
+  Classe "1" o-- "0..*" Relation
+
+  Classe ..|> Notes
+  Relation ..|> Notes
+  Operation ..|> Notes
+
+  GenerateurPython "1" --> "0..*" FichierCodePython : ecritDans
+  FichierCodePython "1" -- "0..*" Classe : contientCodeDe
+}
+
+' =========================
+' PACKAGE 2 : DIAGRAMME COMMUN
+' =========================
+
+package "Diagramme commun" {
 
   class ConvertisseurUmlVersCode {
     +cheminEntree : {ID} String
@@ -183,27 +120,14 @@ package "Modèle UML (utilisé par le GenerateurPython)" {
     +convertir(langage : LangageSortie) : String
   }
 
-  note right of ConvertisseurUmlVersCode
-    Orchestre la transformation
-    d'un diagramme UML vers
-    un langage cible donné.
-  end note
-
-  Classe "1" *-- "0..*" Attribut 
-  Classe "1" *-- "0..*" Operation 
-  Classe "1" o-- "0..*" Relation 
-
-  Classe ..|> Notes
-  Relation ..|> Notes
-  Operation ..|> Notes
-
-  Generateur <|-- GenerateurPython
-
-  GenerateurPython "1" --> "0..*" FichierCodePython : ecritDans
-
-  FichierCodePython "1" -- "0..*" Classe : contientCodeDe
-
-  ConvertisseurUmlVersCode ..> Generateur : selectionne
+  abstract class Generateur {
+    +langage : {ID} LangageSortie
+    +genererCode() : File
+    +genererClasse(classe : Classe) : String
+  }
 }
+
+Generateur <|-- GenerateurPython
+ConvertisseurUmlVersCode ..> Generateur : selectionne
 
 @enduml
