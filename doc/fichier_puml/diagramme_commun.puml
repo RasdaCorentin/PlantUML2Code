@@ -8,16 +8,22 @@ package "Couche Generateur" {
     +cheminEntree : {ID} String
     +cheminSortie : {ID} String
     ---
-    +convertir(DiagrammeClasse, Generateur) : List<File>
+    +convertir(Generateur<LangageSortie>) : List<File>
   }
 
   abstract class Generateur {
+    +diagrame : {ID} DiagrammeComposant
     +langage : {ID} LangageSortie
     ---
-    +genererClasse2Langage(DiagrammeClasse) : List<File>
+    +genererClasse2Langage(DiagrammeComposant) : List<File>
     +genererBlocCommentaire() : String
   }
-
+  ' --- Interface Formattage ---
+  interface Formattage {
+    +idFormat : {ID} String
+    ---
+    +genererCode() : String
+  }
   enum LangageSortie {
     JAVA
     CPP
@@ -25,14 +31,14 @@ package "Couche Generateur" {
   }
 
   interface Commentaire {
+    +idCommentaire : String
+    ---
     +genererBlocCommentaire() : String
   }
 
   Generateur ..|> Commentaire
   ConvertisseurUmlVersCode "1" *-- "1..*" Generateur
 }
-
-package "UML" {
 
 package "Diagramme"{
   class DiagrammeComposant{
@@ -51,6 +57,8 @@ package "Diagramme"{
     +getListeDatatype() : List<Datatype>
   }
 }
+
+package "UML" {
   class "Classe" as UMLClasse {
     +nom : {ID} String
     +estAbstraite : Boolean
@@ -69,14 +77,13 @@ package "Diagramme"{
   class Attribut {
     +nom : {ID} String
     +type : String
-    +visibilite : Visibilite
+    +visibilite : String 
   }
 
   class Operation {
     +nom : {ID} String
     +typeRetour : String
-    +visibilite : Visibilite
-    -notes : List<String>
+    +visibilite : String 
     ---
     +ajouterNotes(String) : void
   }
@@ -96,7 +103,15 @@ package "Diagramme"{
     +estImplementation : Boolean
   }
 
-  class Datatype{}
+  class Datatype{
+   +idDatatype : {ID} String
+   +getListeEnumeration(): List<Enumeration>
+  }
+
+  class Enumeration{
+     +contenu : {ID} String 
+  }
+  Datatype "1" *-- "0..*" Enumeration 
   DiagrammeClasse "1" o-- "0..*" Datatype 
   DiagrammeComposant "1" o-- "0..*" DiagrammeClasse
   interface Notes {
@@ -132,7 +147,7 @@ package "Diagramme"{
 Generateur <|-- GenerateurJava
 Generateur <|-- GenerateurCpp
 Generateur <|-- GenerateurPython
-ConvertisseurUmlVersCode "1" o-- "0..1" DiagrammeComposant 
+Generateur "1" o-- "0..1" DiagrammeComposant 
 
 note "Classe specialisee\nvoir diagramme specialise" as N1
 N1 -- GenerateurJava
