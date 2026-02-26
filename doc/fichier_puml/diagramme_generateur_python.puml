@@ -8,11 +8,84 @@ package "Contexte commun (minimal)" {
     CPP
     PYTHON
   }
+
+  class DiagrammeClasse {
+    +nom : {ID} String
+    +getListeClasses() : List<Classe>
+  }
+
+  class Classe {
+    +nom : {ID} String
+    +estAbstraite : Boolean
+    +estInterface : Boolean
+    +getAttributs() : List<Attribut>
+    +getOperations() : List<Operation>
+    +getRelations() : List<Relation>
+  }
+
+  class Attribut {
+    +nom : {ID} String
+    +type : String
+    +visibilite : Visibilite
+  }
+
+  class Operation {
+    +nom : {ID} String
+    +typeRetour : String
+    +visibilite : Visibilite
+  }
+
+  abstract class Relation {
+    +idRelation : {ID} String
+    +cardinaliteSource : int
+    +roleSource : String
+    +cardinaliteCible : int
+    +roleCible : String
+  }
+
+  class Heritage
+  class Composition
+  class Agregation
+
+  Relation <|-- Heritage
+  Relation <|-- Composition
+  Relation <|-- Agregation
+
+  interface Notes {
+    +ajouterNotes(String): void
+  }
+
+  Classe ..|> Notes
+  Relation ..|> Notes
+  Operation ..|> Notes
+
+  enum Visibilite {
+    PUBLIC
+    PRIVE
+    PROTEGE
+    PAQUETAGE
+  }
+
   abstract class Generateur {
     +langage : {ID} LangageSortie
     +genererCode(diagramme : DiagrammeClasse) : File
     +genererClasse(classe : Classe) : String
   }
+
+  class ConvertisseurUmlVersCode {
+    +cheminEntree : {ID} String
+    +cheminSortie : {ID} String
+    +convertir(diagramme : DiagrammeClasse, langage : LangageSortie) : String
+  }
+
+  Classe "1" *-- "0..*" Attribut : attributs
+  Classe "1" *-- "0..*" Operation : operations
+  Classe "1" o-- "0..*" Relation : relationsSortantes
+  DiagrammeClasse "1" *-- "0..*" Classe : classes
+
+  ConvertisseurUmlVersCode "1" o-- "0..1" DiagrammeClasse  : litDiagramme
+  ConvertisseurUmlVersCode ..> LangageSortie : selectionne
+  ConvertisseurUmlVersCode "1" *-- "0..*" Generateur : utilise
 }
 
 package "Extension Python (personnelle)" {
@@ -23,9 +96,12 @@ package "Extension Python (personnelle)" {
     +genererClasse(classe : Classe) : String
     -genererClassePython(classe : Classe) : String
   }
-
 }
 
 Generateur <|-- GenerateurPython
+
+ConvertisseurUmlVersCode ..> GenerateurPython : instancieSelonLangage
+
+GenerateurPython ..> Classe : generePour
 
 @enduml

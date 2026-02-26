@@ -18,12 +18,13 @@ package "Couche Generateur" {
     +genererClasse2Langage(DiagrammeComposant) : List<File>
     +genererBlocCommentaire() : String
   }
-  ' --- Interface Formattage ---
+
   interface Formattage {
     +idFormat : {ID} String
     ---
     +genererCode() : String
   }
+
   enum LangageSortie {
     JAVA
     CPP
@@ -77,13 +78,13 @@ package "UML" {
   class Attribut {
     +nom : {ID} String
     +type : String
-    +visibilite : String 
+    +visibilite : Visibilite
   }
 
   class Operation {
     +nom : {ID} String
     +typeRetour : String
-    +visibilite : String 
+    +visibilite : Visibilite
     ---
     +ajouterNotes(String) : void
   }
@@ -98,6 +99,7 @@ package "UML" {
     +cardinaliteCible : String
     +roleCible : String
   }
+
   class RelationSansCardinalite {
     +estHeritage : Boolean
     +estImplementation : Boolean
@@ -109,45 +111,50 @@ package "UML" {
   }
 
   class Enumeration{
-     +contenu : {ID} String 
+     +contenu : {ID} String
   }
-  Datatype "1" *-- "0..*" Enumeration 
-  DiagrammeClasse "1" o-- "0..*" Datatype 
-  DiagrammeComposant "1" o-- "0..*" DiagrammeClasse
+
+  enum Visibilite {
+    PUBLIC
+    PRIVE
+    PROTEGE
+    PAQUETAGE
+  }
+
   interface Notes {
     +ajouterNotes(String) : void
   }
+
   enum TypeRelation {
    FORTEAGREGATION
    FAIBLEAGREGATION
    HERITAGE
    IMPLEMENTATION
   }
+
+  Datatype "1" *-- "0..*" Enumeration
+  DiagrammeClasse "1" o-- "0..*" Datatype
+  DiagrammeComposant "1" o-- "0..*" DiagrammeClasse
+
   Relation ..> TypeRelation
-  ' --- Heritages ---
   Relation <|-- RelationSansCardinalite
   Relation <|-- RelationAvecCardinalite
 
-  ' --- Implementations de Notes ---
   UMLClasse ..|> Notes
   Operation ..|> Notes
   Relation ..|> Notes
 
-  ' --- Compositions internes ---
-  DiagrammeClasse "1" o-- "0..*" UMLClasse  
+  DiagrammeClasse "1" o-- "0..*" UMLClasse
   UMLClasse "1" *-- "0..*" Attribut
   UMLClasse "1" *-- "0..*" Operation
-
-  ' --- Agregation : une relation lie 2 classes ---
-  UMLClasse "2" o-- "0..*" Relation 
+  UMLClasse "2" o-- "0..*" Relation
 }
-
 
 ' --- Heritages vers les generateurs specialises ---
 Generateur <|-- GenerateurJava
 Generateur <|-- GenerateurCpp
 Generateur <|-- GenerateurPython
-Generateur "1" o-- "0..1" DiagrammeComposant 
+Generateur "1" o-- "0..1" DiagrammeComposant
 
 note "Classe specialisee\nvoir diagramme specialise" as N1
 N1 -- GenerateurJava
