@@ -19,6 +19,7 @@ package "Couche Generateur" {
     +genererBlocCommentaire() : String
   }
 
+  ' --- Interface Formattage ---
   interface Formattage {
     +idFormat : {ID} String
     ---
