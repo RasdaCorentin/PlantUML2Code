@@ -1,0 +1,268 @@
+@startuml
+title UMLFactory2Code - Extension C++
+skinparam classAttributeIconSize 0
+skinparam noteBackgroundColor #FEFECE
+skinparam noteBorderColor #F8F8F8
+skinparam linetype ortho
+
+' --- Rappel du contexte commun ---
+package "Contexte Commun" {
+
+  abstract class Generateur {
+    -langage : {ID} LangageSortie
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+    +genererBlocCommentaire() : String
+    +getLangage() : LangageSortie
+    +setLangage(LangageSortie) : void
+  }
+
+  enum LangageSortie {
+    CPP
+    PYTHON
+    JAVA
+  }
+}
+
+package "Extension C++" #LightBlue {
+
+  ' --- Interface Formattage ---
+  interface Formattage {
+    -idFormattage : {ID} String
+    ---
+    +genererCode() : String
+    +getIdFormattage() : String
+    +setIdFormattage(String) : void
+  }
+  note top of Formattage
+    <b>Le Contrat (Interface) :</b>
+    Impose une standardisation.
+    Tout élément C++ doit savoir se 
+    transformer en code source (String).
+  end note
+
+  ' --- GenerateurCpp ---
+  class GenerateurCpp {
+    -langage : {ID} LangageSortie = CPP
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<FichierCpp>
+    +genererBlocCommentaire() : String
+    +genererCode() : String
+    -traduireClasse(UMLClasse) : ClasseCpp
+    -traduireRelation(ClasseCpp, String, Relation, Map) : void
+    -genererHeader(ClasseCpp) : FichierCpp
+    -genererSource(ClasseCpp) : FichierCpp
+    +getLangage() : LangageSortie
+    +setLangage(LangageSortie) : void
+  }
+
+  note left of GenerateurCpp
+    <b>Le Chef d'Orchestre C++ :</b>
+    Lit le modèle UML et instancie
+    les classes C++ intermédiaires.
+    Polymorphisme par spécialisation
+    pour genererClasse2Langage().
+  end note
+
+  ' --- FichierCpp ---
+  class FichierCpp {
+    -nomFichier : {ID} String
+    -typeFichier : TypeFichierCpp
+    -cheminComplet : String
+    ---
+    +genererCode() : String
+    +sauvegarder() : void
+    +getNomFichier() : String
+    +setNomFichier(String) : void
+    +getTypeFichier() : TypeFichierCpp
+    +setTypeFichier(TypeFichierCpp) : void
+    +getCheminComplet() : String
+    +setCheminComplet(String) : void
+  }
+
+  note bottom of FichierCpp
+    <b>Gestionnaire de Fichier :</b>
+    Représente un fichier physique (.h ou .cpp).
+    Gère les includes et les guards.
+    <b>Délégation :</b>
+    genererCode() appelle
+    ClasseCpp.genererCode()
+  end note
+
+  ' --- ClasseCpp ---
+  class "Classe" as ClasseCpp {
+    -nom : {ID} String
+    -estAbstraite : Boolean
+    -notes : List<String>
+    -attributsCpp : List<AttributCpp>
+    -operationsCpp : List<OperationCpp>
+    -relationsCpp : List<RelationCpp>
+    ---
+    +genererCode() : String
+    +getAttributsCpp() : List<AttributCpp>
+    +getOperationsCpp() : List<OperationCpp>
+    +getNom() : String
+    +setNom(String) : void
+    +getEstAbstraite() : Boolean
+    +setEstAbstraite(Boolean) : void
+    +getNotes() : List<String>
+    +setNotes(List<String>) : void
+    +getRelationsCpp() : List<RelationCpp>
+    +setRelationsCpp(List<RelationCpp>) : void
+  }
+  note right of ClasseCpp
+    <b>Structure Intermédiaire C++ :</b>
+    Objet temporaire contenant les métadonnées.
+    Délègue la génération du corps à ses
+    enfants (attributs, méthodes, relations).
+  end note
+
+  ' --- AttributCpp ---
+  class AttributCpp {
+    -nom : {ID} String
+    -typeCpp : String
+    -estConst : Boolean
+    -estStatic : Boolean
+    ---
+    +genererCode() : String
+    +getNom() : String
+    +setNom(String) : void
+    +getTypeCpp() : String
+    +setTypeCpp(String) : void
+    +getEstConst() : Boolean
+    +setEstConst(Boolean) : void
+    +getEstStatic() : Boolean
+    +setEstStatic(Boolean) : void
+  }
+  note bottom of AttributCpp
+    <b>Générateur d'Attributs :</b>
+    Gère la déclaration avec
+    les spécificités C++ (const, static).
+  end note
+
+  ' --- OperationCpp ---
+  class OperationCpp {
+    -nom : {ID} String
+    -typeRetourCpp : String
+    -estVirtuelle : Boolean
+    -estVirtuellePure : Boolean
+    ---
+    +genererCode() : String
+    +getNom() : String
+    +setNom(String) : void
+    +getTypeRetourCpp() : String
+    +setTypeRetourCpp(String) : void
+    +getEstVirtuelle() : Boolean
+    +setEstVirtuelle(Boolean) : void
+    +getEstVirtuellePure() : Boolean
+    +setEstVirtuellePure(Boolean) : void
+  }
+  note bottom of OperationCpp
+    <b>Générateur de Méthodes :</b>
+    Construit la signature et gère
+    les méthodes virtuelles ou pures (= 0).
+  end note
+
+  ' --- RelationCpp ---
+  class RelationCpp {
+    -idRelation : {ID} String
+    -typeRelation : TypeRelationCpp
+    ---
+    +genererCode() : String
+    +genererInclude() : String
+    +getIdRelation() : String
+    +setIdRelation(String) : void
+    +getTypeRelation() : TypeRelationCpp
+    +setTypeRelation(TypeRelationCpp) : void
+  }
+  note right of RelationCpp
+    <b>Générateur de Relations :</b>
+    Traduit les relations en attributs C++
+    (pointeurs, vecteurs) et gère les includes.
+  end note
+
+  class RelationCppAvecCardinalite {
+    -idRelation : String
+    -typeRelation : TypeRelationCpp
+    -cardinaliteSource : String
+    -cardinaliteCible : String
+    -roleSource : String
+    -roleCible : String
+    ---
+    +genererCode() : String
+    +genererInclude() : String
+    +getIdRelation() : String
+    +setIdRelation(String) : void
+    +getTypeRelation() : TypeRelationCpp
+    +setTypeRelation(TypeRelationCpp) : void
+    +getCardinaliteSource() : String
+    +setCardinaliteSource(String) : void
+    +getCardinaliteCible() : String
+    +setCardinaliteCible(String) : void
+    +getRoleSource() : String
+    +setRoleSource(String) : void
+    +getRoleCible() : String
+    +setRoleCible(String) : void
+  }
+
+  ' --- Implementation ---
+  class RelationCppSansCardinalite {
+    -idRelation : String
+    -typeRelation : TypeRelationCpp
+    ---
+    +genererCode() : String
+    +genererInclude() : String
+    +getIdRelation() : String
+    +setIdRelation(String) : void
+    +getTypeRelation() : TypeRelationCpp
+    +setTypeRelation(TypeRelationCpp) : void
+  }
+
+
+  ' --- Enums ---
+  enum TypeFichierCpp {
+    HEADER
+    SOURCE
+  }
+
+  enum TypeRelationCpp {
+    ASSOCIATION
+    AGREGATION
+    HERIATGE 
+    IMPLEMENTATION
+  }
+
+  ' ===== RELATIONS =====
+
+  Formattage ..|> ClasseCpp
+  Formattage ..|> OperationCpp
+  Formattage ..|> AttributCpp
+  Formattage ..|> RelationCpp
+  Formattage ..|> FichierCpp
+  ' Heritage vers le commun
+  Generateur <|-- GenerateurCpp
+
+  ' Heritage local
+  RelationCpp <|-- RelationCppSansCardinalite
+  RelationCpp <|-- RelationCppAvecCardinalite 
+
+
+  ' Agregation : le generateur cree des fichiers
+  GenerateurCpp "1" o-- "0..*" FichierCpp 
+
+  ' Agregation : un fichier contient des classes
+  FichierCpp "1" o-- "1..*" ClasseCpp 
+
+  ' Composition : une classe possede ses attributs et operations
+  ClasseCpp "1" *-- "0..*" AttributCpp
+  ClasseCpp "1" *-- "0..*" OperationCpp 
+
+  ' Agregation : une relation lie 2 classes
+  ClasseCpp "2" o-- "0..*" RelationCpp 
+
+  ' Associations vers enums
+  FichierCpp ..> TypeFichierCpp
+  RelationCpp ..> TypeRelationCpp
+}
+
+@enduml

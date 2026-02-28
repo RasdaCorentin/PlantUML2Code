@@ -1,0 +1,102 @@
+@startuml
+
+' ────────────────────────────────────────────────────────────────────────────
+' Diagramme de classes complet pour UMLFactory2Code — suite de tests
+' Couvre : héritage, interfaces multiples, composition, agrégation,
+'          association dirigée, cardinalités multiples, notes.
+' ────────────────────────────────────────────────────────────────────────────
+
+' ── Interfaces ───────────────────────────────────────────────────────────────
+
+interface Payable {
+    +payer() : void
+}
+
+interface Serialisable {
+    +sauvegarder() : void
+}
+
+' ── Classe abstraite racine ───────────────────────────────────────────────────
+
+abstract class Personne {
+    -nom : String
+    -age : int
+    ---
+    +sePresenter() : void
+}
+
+' ── Classes concrètes ─────────────────────────────────────────────────────────
+
+class Client {
+    -email : String
+    -fidelite : int
+    ---
+    +passerCommande() : void
+    +consulterHistorique() : void
+}
+
+class Employe {
+    -matricule : String
+    -salaire : double
+    ---
+    +traiterCommande() : void
+}
+
+class Commande {
+    -dateCommande : String
+    -statut : String
+    ---
+    +valider() : void
+    +calculerTotal() : double
+}
+
+class Produit {
+    -reference : String
+    -prix : double
+    ---
+    +getDisponibilite() : boolean
+}
+
+class Adresse {
+    -rue : String
+    -ville : String
+    -codePostal : String
+}
+
+' ── Notes ────────────────────────────────────────────────────────────────────
+
+note right of Client
+  Le Client peut passer
+  plusieurs commandes
+end note
+
+note left of Commande
+  Une commande contient
+  plusieurs produits
+end note
+
+note top of Personne
+  Classe abstraite racine
+  de la hierarchie metier
+end note
+
+' ── Relations ─────────────────────────────────────────────────────────────────
+
+' Héritage
+Personne <|-- Client
+Personne <|-- Employe
+
+' Implémentation d'interfaces (multiples pour Client)
+Client ..|> Payable
+Client ..|> Serialisable
+
+' Composition : Client possède une Adresse (1-1)
+Client "1" *-- "1" Adresse
+
+' Association dirigée : Client passe 0 ou plusieurs Commandes
+Client "1" --> "0..*" Commande
+
+' Agrégation : Commande contient 1 ou plusieurs Produits
+Commande "1" o-- "1..*" Produit
+
+@enduml
