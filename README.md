@@ -1,93 +1,163 @@
-# TP_Architecture_Composants_Partages
+# UMLFactory2Code — Générateur de Code Multi-Langages
 
+**CCO — TP Projet noté : Architecture avec composants partagés**
 
+**Année universitaire :** 2025–2026
 
-## Getting started
+**Professeur :** Rémy COURDIER
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+**Établissement :** Université de La Réunion — ESIROI (Informatique)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+---
 
-## Add your files
+## 📝 Description
 
-* [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+Ce projet implémente un générateur de code orienté objet à partir de diagrammes UML modélisés en PlantUML (`.puml`).
+L'outil lit un fichier PlantUML, construit un modèle UML abstrait en mémoire, puis génère automatiquement le code source dans le langage cible choisi.
+
+L'architecture respecte les principes de la conception orientée objet (polymorphisme, encapsulation, pattern Factory/Strategy) et repose sur **une partie commune partagée** entre tous les étudiants et **trois extensions spécialisées**, chacune développée individuellement.
+
+---
+
+## 👥 Étudiants et contributions
+
+| Étudiant | Extension | Classe de référence | Branche |
+| --- | --- | --- | --- |
+| **Corentin RASDA** | C++ | `GenerateurCpp` | `feature/Corentin` |
+| **Enzo POIRIER** | Python | `GenerateurPython` | `feature/Enzo` |
+| **Benoît DIJOUX** | Java | `GenerateurJava` | `feature/Benoit` |
+
+---
+
+## 🏗️ Architecture du projet
+
+Notre application se divise en deux couches strictes.
+
+### 1. Le Cœur Commun (Analyse & Métamodèle)
+
+Cette partie, conçue en groupe, est indépendante du langage de sortie. Elle comprend :
+
+* **Le Parseur (`ParseurPuml`)** : Analyse les fichiers `.puml` via des expressions régulières pour en extraire la structure.
+* **Le Métamodèle UML** : Représentation abstraite en mémoire (`UmlClasse`, `Attribut`, `Operation`, `Relation`, `Notes`, `Visibilite`).
+* **`DiagrammeClasse`** : Conteneur représentant l'ensemble du diagramme.
+* **Le Contrat (`Generateur`)** : Classe abstraite définissant la méthode `generer_classe2_langage(diagramme_classe)` que chaque extension implémente.
+
+### 2. Les Extensions Spécialisées (Génération)
+
+Chaque extension hérite du `Generateur` commun pour adapter le modèle aux paradigmes de son langage :
+
+* **Extension C++ (Corentin RASDA)** : Produit systématiquement une paire de fichiers (`.h` et `.cpp`). Gère nativement l'héritage, les pointeurs, les vecteurs (`std::vector`), et inclut la délégation dans sa génération.
+* **Extension Python (Enzo POIRIER)** : Génère des classes avec constructeurs `__init__`, gère l'héritage multiple, respecte la PEP 8 et exploite le module `abc` pour matérialiser les interfaces et classes abstraites.
+* **Extension Java (Benoît DIJOUX)** : Utilise une approche par Factory avec des classes intermédiaires (`ClasseJava`, etc.). Traduit les relations en attributs typés (`List<>` si cardinalité multiple), résout les imports, et génère automatiquement les Getters/Setters.
+
+### Arborescence des fichiers
+
+```text
+programme/
+├── src/
+│   ├── commun/                  # Composants partagés (métamodèle UML)
+│   │   ├── uml_classe.py        # Représentation d'une classe UML
+│   │   ├── attribut.py          # Attribut d'une classe
+│   │   ├── operation.py         # Opération / méthode
+│   │   ├── relation.py          # Relation entre classes
+│   │   ├── notes.py             # Notes PlantUML
+│   │   ├── visibilite.py        # Visibilité (public, private, protected)
+│   │   ├── diagramme_classe.py  # Conteneur du diagramme complet
+│   │   └── parseur_puml.py      # Parseur de fichiers .puml
+│   ├── generateur/              # Couche d'abstraction de génération
+│   │   ├── generateur.py        # Classe abstraite Generateur
+│   │   ├── commentaire.py       # Génération des commentaires
+│   │   ├── convertisseur.py     # Convertisseur de types UML
+│   │   └── langage_sortie.py    # Enumération des langages cibles
+│   ├── specialisation_cpp/      # Extension C++ (Corentin RASDA)
+│   │   ├── generateur_cpp.py
+│   │   └── ... (classes_cpp, attribut_cpp, fichiers_cpp, etc.)
+│   ├── specialisation_python/   # Extension Python (Enzo POIRIER)
+│   │   └── generateur_python.py
+│   └── specialisation_java/     # Extension Java (Benoît DIJOUX)
+│       ├── generateur_java.py
+│       └── ... (classes_java, attribut_java, etc.)
+├── test/                        # Fichiers de test
+│   ├── exemple_complet.puml
+│   ├── test_complet.py          # Suite de tests intégrée (3 langages)
+│   └── test_java.py
+│   └── test_python.py
+│   └── test_cpp.py
+doc/
+├── fichier_puml/                # Diagrammes UML du projet
+│   ├── diagramme_commun.puml
+│   ├── diagramme_generateur_cpp.puml
+│   ├── diagramme_generateur_python.puml
+│   └── diagramme_generateur_java.puml
+└── images/                      # Exports PNG des diagrammes
 
 ```
-cd existing_repo
-git remote add origin https://git.inge.re/enzo.poirier/tp_architecture_composants_partages.git
-git branch -M main
-git push -uf origin main
+
+---
+
+## ⚙️ Prérequis
+
+* Python 3.10+
+* PlantUML (pour visualiser ou modifier les diagrammes `.puml`)
+* *Optionnel* : `pytest` pour l'exécution avancée des tests.
+
+---
+
+## 🚀 Utilisation (CLI)
+
+Générez le code source depuis un terminal en spécifiant le langage cible, le fichier d'entrée et le dossier de sortie :
+
+```bash
+# Générer du code C++
+python programme/umlfactory2java.py --langage cpp --input mon_diagramme.puml --output ./sortie_cpp/
+
+# Générer du code Python
+python programme/umlfactory2java.py --langage python --input mon_diagramme.puml --output ./sortie_python/
+
+# Générer du code Java
+python programme/umlfactory2java.py --langage java --input mon_diagramme.puml --output ./sortie_java/
+
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://git.inge.re/enzo.poirier/tp_architecture_composants_partages/-/settings/integrations)
+## 🧪 Lancer les tests
 
-## Collaborate with your team
+Une suite de tests robuste (`test_complet.py`) valide la génération simultanée des trois langages à partir d'un diagramme complexe (`exemple_complet.puml`).
 
-* [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+**Lancer le test complet (Script standard) :**
 
-## Test and Deploy
+```bash
+python programme/test/test_complet.py
 
-Use the built-in continuous integration in GitLab.
+```
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+**Exécution avec Pytest :**
 
-***
+```bash
+# Tester toutes les extensions
+python -m pytest programme/test/test_complet.py -v
 
-# Editing this README
+# Tester spécifiquement l'extension Java
+python -m pytest programme/test/test_java.py
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+```
 
-## Suggestions for a good README
+Les fichiers générés par les tests sont sauvegardés dans `programme/test/output/{langage}/`.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+---
 
-## Name
-Choose a self-explaining name for your project.
+## 📊 Diagrammes UML
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+Les diagrammes de classes documentant notre propre architecture sont disponibles dans le dossier `doc/fichier_puml/` :
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+* `diagramme_commun.puml` — Architecture partagée et modèle abstrait.
+* `diagramme_generateur_cpp.puml` — Extension C++.
+* `diagramme_generateur_python.puml` — Extension Python.
+* `diagramme_generateur_java.puml` — Extension Java.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+---
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## 🔗 Dépôt Git
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[git.inge.re — tp_architecture_composants_partages](https://git.inge.re/enzo.poirier/tp_architecture_composants_partages)
