@@ -1,0 +1,143 @@
+@startuml
+title UMLFactory2Code - Extension Java 
+skinparam classAttributeIconSize 0
+skinparam noteBackgroundColor #FEFECE
+skinparam noteBorderColor #F8F8F8
+skinparam linetype ortho
+
+' --- Rappel du contexte commun ---
+package "Contexte Commun" {
+  abstract class Generateur {
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+  }
+}
+
+package "Extension Java" #MistyRose {
+
+  ' --- INTERFACE ---
+  interface GenerableJava {
+    +genererCode() : String
+  }
+  note right of GenerableJava
+    <b>Le Contrat (Interface) :</b>
+    Impose une standardisation.
+    Tout élément (Classe, Attribut, Méthode)
+    doit savoir se transformer en code source
+    sous forme de texte (String).
+  end note
+
+  ' --- ENUMERATION ---
+  enum Visibilite <<Enumeration>> {
+    PUBLIC
+    PROTECTED
+    PRIVATE
+    PACKAGE
+    --
+    +toString() : String
+  }
+  note top of Visibilite
+    <b>Sécurité du Typage (Enum) :</b>
+    Remplace les String "public", "private"...
+    Limite les choix aux mots-clés valides.
+  end note
+
+  ' --- GÉNÉRATEUR ---
+  class GenerateurJava {
+    +langage : LangageSortie = JAVA
+    -packageParDefaut : String
+    -classesGenerees : List<ClasseJava>
+    ---
+    +genererClasse2Langage(DiagrammeClasse) : List<File>
+    +genererBlocCommentaire() : String
+    -traduireClasse(UMLClasse) : ClasseJava
+    -sauvegarderFichier(ClasseJava) : File
+    -traduireType(String) : String
+    -traduireVisibilite(String) : Visibilite
+  }
+  note left of GenerateurJava
+    <b>Le Chef d'Orchestre :</b>
+    1. Lit le modèle UML.
+    2. Fabrique les objets ClasseJava.
+    3. Stocke la liste et maintient le lien.
+    4. Écrit les fichiers à la fin.
+  end note
+
+  ' --- CLASSE JAVA ---
+  class ClasseJava {
+    +nom : String
+    +package : String
+    +imports : Set<String>
+    +estAbstraite : Boolean
+    +visibilite : Visibilite
+    +nomMere : String
+    +interfaces : List<String>
+    ' Référence vers le générateur parent (implique la bidirectionnalité)
+    -generateurParent : GenerateurJava 
+    ---
+    +ajouterImport(String) : void
+    +genererCode() : String
+  }
+  note right of ClasseJava
+    <b>Structure Intermédiaire :</b>
+    Objet temporaire contenant les métadonnées.
+    Elle connait son Générateur parent.
+    Délègue la génération du corps à ses
+    enfants (attributs et méthodes).
+  end note
+
+  ' --- ATTRIBUT JAVA ---
+  class AttributJava {
+    +nom : String
+    +type : String
+    +visibilite : Visibilite
+    +estStatic : Boolean
+    +estFinal : Boolean
+    ---
+    +genererCode() : String
+    +genererGetter() : String
+    +genererSetter() : String
+  }
+  note bottom of AttributJava
+    <b>Générateur d'Attributs :</b>
+    Gère la déclaration (ex: private int id;)
+    et la création automatique des
+    Getters et Setters.
+  end note
+
+  ' --- MÉTHODE JAVA ---
+  class MethodeJava {
+    +nom : String
+    +typeRetour : String
+    +visibilite : Visibilite
+    +parametres : Map<String, String>
+    +contenu : String
+    ---
+    +genererCode() : String
+  }
+  note bottom of MethodeJava
+    <b>Générateur de Méthodes :</b>
+    Construit la signature complète
+    et encapsule le corps de la méthode.
+  end note
+
+  ' ===== RELATIONS =====
+
+  ' 1. Héritage du framework commun
+  Generateur <|-- GenerateurJava
+
+  ' 2. Implémentation du contrat de génération
+  GenerableJava <|.. ClasseJava
+  GenerableJava <|.. AttributJava
+  GenerableJava <|.. MethodeJava
+
+  ' 3. Association Bidirectionnelle
+  ' Trait plein sans flèche ni losange = Bidirectionnel
+  GenerateurJava "1" -- "0..*" ClasseJava : "Gère <--> Appartient à"
+  
+
+  ' 4. Composition (Une classe est composée d'attributs et méthodes)
+  ClasseJava "1" *-- "0..*" AttributJava : "possède"
+  ClasseJava "1" *-- "0..*" MethodeJava : "possède"
+
+}
+@enduml
