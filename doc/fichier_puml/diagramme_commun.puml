@@ -27,14 +27,6 @@ package "Couche Generateur" {
     +setLangage(LangageSortie) : void
   }
 
-  ' --- Interface Formattage ---
-  interface Formattage {
-    -idFormat : {ID} String
-    ---
-    +genererCode() : String
-    +getIdFormat() : String
-    +setIdFormat(String) : void
-  }
 
   enum LangageSortie {
     JAVA
