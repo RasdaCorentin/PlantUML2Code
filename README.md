@@ -1,7 +1,3 @@
-Voici une fusion des deux documents. J'ai conservé le contexte universitaire et technique de votre version, tout en y intégrant les explications architecturales détaillées et la mise en page de ma proposition précédente. C'est le `README.md` parfait et complet pour la racine de votre projet.
-
----
-
 # UMLFactory2Code — Générateur de Code Multi-Langages
 
 **CCO — TP Projet noté : Architecture avec composants partagés**
