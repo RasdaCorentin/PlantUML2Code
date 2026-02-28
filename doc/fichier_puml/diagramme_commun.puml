@@ -1,0 +1,224 @@
+@startuml
+title UMLFactory2Code - Diagramme Commun
+skinparam classAttributeIconSize 0
+
+package "Couche Generateur" {
+
+  class ConvertisseurUmlVersCode {
+    -cheminEntree : {ID} String
+    -cheminSortie : {ID} String
+    ---
+    +convertir(Generateur<LangageSortie>) : List<File>
+    +getCheminEntree() : String
+    +setCheminEntree(String) : void
+    +getCheminSortie() : String
+    +setCheminSortie(String) : void
+  }
+
+  abstract class Generateur {
+    -diagrame : {ID} DiagrammeComposant
+    -langage : {ID} LangageSortie
+    ---
+    +genererClasse2Langage(DiagrammeComposant) : List<File>
+    +genererBlocCommentaire() : String
+    +getDiagrame() : DiagrammeComposant
+    +setDiagrame(DiagrammeComposant) : void
+    +getLangage() : LangageSortie
+    +setLangage(LangageSortie) : void
+  }
+
+
+  enum LangageSortie {
+    JAVA
+    CPP
+    PYTHON
+  }
+
+  interface Commentaire {
+    -idCommentaire : String
+    ---
+    +genererBlocCommentaire() : String
+    +getIdCommentaire() : String
+    +setIdCommentaire(String) : void
+  }
+
+  Generateur ..|> Commentaire
+  ConvertisseurUmlVersCode "1" *-- "1..*" Generateur
+}
+
+package "Diagramme"{
+  class DiagrammeComposant{
+    -nom : {ID} String
+    -contenu : String
+    -classes : List<Classe>
+    ---
+    +getListeDiagrammeClasse() : List<DiagrammeClasse>
+    +getNom() : String
+    +setNom(String) : void
+    +getContenu() : String
+    +setContenu(String) : void
+    +getClasses() : List<Classe>
+    +setClasses(List<Classe>) : void
+  }
+  
+  class DiagrammeClasse {
+    -nom : {ID} String
+    -contenu : String
+    -classes : List<Classe>
+    ---
+    +getListeClasses() : List<Classe>
+    +getListeDatatype() : List<Datatype>
+    +getNom() : String
+    +setNom(String) : void
+    +getContenu() : String
+    +setContenu(String) : void
+    +getClasses() : List<Classe>
+    +setClasses(List<Classe>) : void
+  }
+}
+
+package "UML" {
+  class "Classe" as UMLClasse {
+    -nom : {ID} String
+    -estAbstraite : Boolean
+    -estInterface : Boolean
+    -attributs : List<Attribut>
+    -operations : List<Operation>
+    -relations : List<Relation>
+    -notes : List<String>
+    ---
+    +getAttributs() : List<Attribut>
+    +getOperations() : List<Operation>
+    +getRelations() : List<Relation>
+    +ajouterNotes(String) : void
+    +getNom() : String
+    +setNom(String) : void
+    +getEstAbstraite() : Boolean
+    +setEstAbstraite(Boolean) : void
+    +getEstInterface() : Boolean
+    +setEstInterface(Boolean) : void
+  }
+
+  class Attribut {
+    -nom : {ID} String
+    -type : String
+    -visibilite : Visibilite
+    ---
+    +getNom() : String
+    +setNom(String) : void
+    +getType() : String
+    +setType(String) : void
+    +getVisibilite() : Visibilite
+    +setVisibilite(Visibilite) : void
+  }
+
+  class Operation {
+    -nom : {ID} String
+    -typeRetour : String
+    -visibilite : Visibilite
+    ---
+    +ajouterNotes(String) : void
+    +getNom() : String
+    +setNom(String) : void
+    +getTypeRetour() : String
+    +setTypeRetour(String) : void
+    +getVisibilite() : Visibilite
+    +setVisibilite(Visibilite) : void
+  }
+
+  abstract class Relation {
+    -idRelation : {ID} TypeRelation
+    ---
+    +getIdRelation() : TypeRelation
+    +setIdRelation(TypeRelation) : void
+  }
+
+  class RelationAvecCardinalite {
+    -cardinaliteSource : String
+    -roleSource : String
+    -cardinaliteCible : String
+    -roleCible : String
+    ---
+    +getCardinaliteSource() : String
+    +setCardinaliteSource(String) : void
+    +getRoleSource() : String
+    +setRoleSource(String) : void
+    +getCardinaliteCible() : String
+    +setCardinaliteCible(String) : void
+    +getRoleCible() : String
+    +setRoleCible(String) : void
+  }
+
+  class RelationSansCardinalite {
+    -estHeritage : Boolean
+    -estImplementation : Boolean
+    ---
+    +getEstHeritage() : Boolean
+    +setEstHeritage(Boolean) : void
+    +getEstImplementation() : Boolean
+    +setEstImplementation(Boolean) : void
+  }
+
+  class Datatype{
+   -idDatatype : {ID} String
+   ---
+   +getListeEnumeration(): List<Enumeration>
+   +getIdDatatype() : String
+   +setIdDatatype(String) : void
+  }
+
+  class Enumeration{
+     -contenu : {ID} String
+     ---
+     +getContenu() : String
+     +setContenu(String) : void
+  }
+
+  enum Visibilite {
+    PUBLIC
+    PRIVE
+    PROTEGE
+    PAQUETAGE
+  }
+
+  interface Notes {
+    +ajouterNotes(String) : void
+  }
+
+  enum TypeRelation {
+   FORTEAGREGATION
+   FAIBLEAGREGATION
+   HERITAGE
+   IMPLEMENTATION
+  }
+
+  Datatype "1" *-- "0..*" Enumeration
+  DiagrammeClasse "1" o-- "0..*" Datatype
+  DiagrammeComposant "1" o-- "0..*" DiagrammeClasse
+
+  Relation ..> TypeRelation
+  Relation <|-- RelationSansCardinalite
+  Relation <|-- RelationAvecCardinalite
+
+  UMLClasse ..|> Notes
+  Operation ..|> Notes
+  Relation ..|> Notes
+
+  DiagrammeClasse "1" o-- "0..*" UMLClasse
+  UMLClasse "1" *-- "0..*" Attribut
+  UMLClasse "1" *-- "0..*" Operation
+  UMLClasse "2" o-- "0..*" Relation
+}
+
+' --- Heritages vers les generateurs specialises ---
+Generateur <|-- GenerateurJava
+Generateur <|-- GenerateurCpp
+Generateur <|-- GenerateurPython
+Generateur "1" o-- "0..1" DiagrammeComposant
+
+note "Classe specialisee\nvoir diagramme specialise" as N1
+N1 -- GenerateurJava
+N1 -- GenerateurCpp
+N1 -- GenerateurPython
+
+@enduml
